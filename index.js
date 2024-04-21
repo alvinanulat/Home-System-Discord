@@ -191,10 +191,6 @@ app.post("/api/data", (req, res) => {
   //console.log("Received data:", receivedData2);
   res.status(200).send("Data received successfully");
   const pingValue = receivedData2.internet.ping;
-  const pcStatusValue = receivedData2.devices.state.pc;
-  const pcTimeValue = receivedData2.devices.time.pc;
-  const phoneStatusValue = receivedData2.devices.state.phone;
-  const phoneTimeValue = receivedData2.devices.time.phone;
   var pingstate = receivedData2.internet.pingstate;
   const hotspotcount = receivedData2.hotspot.hotspotcount;
 
