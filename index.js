@@ -37,7 +37,7 @@ const PORT = process.env.PORT || 3949;
 
 client.once("ready", (c) => {
   console.log(`${c.user.tag} Ready!`);
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server listening on port ${PORT}`);
   });
 });
