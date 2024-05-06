@@ -32,7 +32,7 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
   ],
 });
-
+app.use(express.static('public'));
 const PORT = process.env.PORT || 3949;
 
 client.once("ready", (c) => {
