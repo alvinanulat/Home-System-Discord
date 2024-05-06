@@ -15,6 +15,7 @@ let apiCallCount = 0; // keep track of how many times we've used the API
 let currentKeyIndex = 0; // keep track of which key we're using
 let messageId = process.env.messageId;
 let channel2;
+let channel;
 
 let receivedData2;
 let lowPingSent = false;
@@ -32,18 +33,20 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
   ],
 });
-app.use(express.static('public'));
+
 const PORT = process.env.PORT || 3949;
+
+client.login(process.env.BOT_TOKEN);
 
 client.once("ready", (c) => {
   console.log(`${c.user.tag} Ready!`);
-  app.listen(PORT, '0.0.0.0', () => {
+  channel = client.channels.cache.get(process.env.viiiinsystemschannel);
+  console.log(channel);
+  app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
   });
-});
-
-client.on("ready", () => {
-  channel = client.channels.cache.get(process.env.viiiinsystemschannel);
+  dataReceivedTime = Date.now(); // Renamed for clarity
+  console.log(dataReceivedTime);
 });
 
 client.on("ready", () => {
@@ -323,7 +326,11 @@ app.post("/api/data", (req, res) => {
   }
 
   if (messageId) {
-    editMessage(messageId, resultString2);
+    try {
+      editMessage2(resultString2);
+    } catch (error) {
+      console.log("Error fetching or editing message:", error);
+    }
   } else {
     console.log("Message ID is not available. Cannot edit message.");
   }
@@ -337,27 +344,50 @@ app.post("/api/data", (req, res) => {
     homedc = false;
   }
 });
-setInterval(() => {
-  const { formattedTime, formattedDate } = getGMT8Time();
-  const formattedDateTime = `as of ${formattedTime} on ${formattedDate}`;
-  const uptime = process.uptime();
-  const currentTime = Date.now();
-  console.log(currentTime);
-  if (currentTime - dataReceivedTime >= 19000) {
-    const resultString3 =
-      `:robot: :warning: **HOME DISCONNECTED**\n\n` +
-      `*${formattedDateTime}*\n` +
-      `*server uptime: ${format(uptime)}* `;
-    console.log("No new data received within 20 seconds.");
-    if (messageId) {
-      editMessage(messageId, resultString3);
-    }
-    if (channel2 && !homedc) {
-      channel2.send(`**HOME DISCONNECTED** *${formattedTime}*`);
-      homedc = true;
-      // Reset ping flags for potential reconnection
+
+async function editMessage2(updatedMessage) {
+  const message = await client.channels.cache
+    .get(process.env.viiiinsystemschannel)
+    .messages.fetch(messageId);
+  await message.edit(updatedMessage);
+  console.log("Message edited Successfully", updatedMessage);
+}
+
+async function checkHomeConnection() {
+  if (channel) {
+    const { formattedTime, formattedDate } = getGMT8Time();
+    const formattedDateTime = `as of ${formattedTime} on ${formattedDate}`;
+    const uptime = process.uptime();
+    const currentTime = Date.now();
+    console.log(currentTime);
+
+    if (currentTime - dataReceivedTime >= 19000) {
+      console.log("-20000 MEN");
+      const resultString3 =
+        `:robot: :warning: **HOME DISCONNECTED**\n\n` +
+        `*${formattedDateTime}*\n` +
+        `*server uptime: ${format(uptime)}* `;
+
+      if (messageId) {
+        console.log(messageId);
+        try {
+          const message = await client.channels.cache
+            .get(process.env.viiiinsystemschannel)
+            .messages.fetch(messageId);
+          await message.edit(resultString3);
+          console.log("Message edited Successfully", resultString3);
+        } catch (error) {
+          console.log("Error fetching or editing message:", error);
+        }
+      }
+      if (channel2 && !homedc) {
+        channel2.send(`**HOME DISCONNECTED** *${formattedTime}*`);
+        homedc = true;
+        // Reset ping flags for potential reconnection
+      }
     }
   }
+}
+setInterval(() => {
+  checkHomeConnection();
 }, 10000);
-
-client.login(process.env.BOT_TOKEN);
