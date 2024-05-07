@@ -185,16 +185,22 @@ var arrDevicesTimeBefore = [];
 var arrDevicesValueBefore = [];
 var arrCctvsTimeBefore = [];
 var arrCctvsValueBefore = [];
+function fixString(invalidJson) {
+  return invalidJson.slice(3, -7);
+}
 
 app.post("/api/data/", (req, res) => {
   const { formattedTime, formattedDate } = getGMT8Time();
   const formattedDateTime = `as of ${formattedTime} on ${formattedDate}`;
   const uptime = process.uptime();
-  receivedData2 = req.body; // Data sent from MikroTik
+  receivedData2 = JSON.parse(req.body); // Data sent from MikroTik
   console.log("------------------------------------");
   //console.log("Received data:", receivedData2);
   res.status(200).send("Data received successfully");
   console.log(receivedData2);
+  const invalidJson = receivedData2;
+  const fixedJson = fixString(invalidJson);
+  console.log(fixedJson);
   const pingValue = receivedData2.internet.ping;
   var pingstate = receivedData2.internet.pingstate;
   const hotspotcount = receivedData2.hotspot.hotspotcount;
