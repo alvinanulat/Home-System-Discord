@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 require("dotenv").config();
 const fs = require("fs");
 const { runGeminiPro, runGeminiProVision } = require("./gemini.js");
@@ -185,7 +186,7 @@ var arrDevicesValueBefore = [];
 var arrCctvsTimeBefore = [];
 var arrCctvsValueBefore = [];
 
-app.put("/api/data", (req, res) => {
+app.post("/api/data/", (req, res) => {
   const { formattedTime, formattedDate } = getGMT8Time();
   const formattedDateTime = `as of ${formattedTime} on ${formattedDate}`;
   const uptime = process.uptime();
