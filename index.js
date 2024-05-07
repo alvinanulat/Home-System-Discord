@@ -193,7 +193,7 @@ app.post("/api/data/", (req, res) => {
   const { formattedTime, formattedDate } = getGMT8Time();
   const formattedDateTime = `as of ${formattedTime} on ${formattedDate}`;
   const uptime = process.uptime();
-  receivedData2 = JSON.parse(req.body); // Data sent from MikroTik
+  receivedData2 = req.body; // Data sent from MikroTik
   console.log("------------------------------------");
   //console.log("Received data:", receivedData2);
   res.status(200).send("Data received successfully");
