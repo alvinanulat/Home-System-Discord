@@ -202,13 +202,12 @@ app.post("/api/data/", (req, res) => {
   try {
     const pingValuetest = receivedData2.internet.ping;
   } catch (e) {
-    console.log(e instanceof TypeError);
     const keys = Object.keys(receivedData2);
-    console.log(keys[0]);
-    receivedData2 = keys[0];
+    receivedData2 = JSON.parse(keys[0]);
+    console.log(receivedData2);
     // Code to handle the error (optional)
   }
-  console.log(receivedData2);
+
   const pingValue = receivedData2.internet.ping;
   var pingstate = receivedData2.internet.pingstate;
   const hotspotcount = receivedData2.hotspot.hotspotcount;
