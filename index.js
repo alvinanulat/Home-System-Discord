@@ -185,7 +185,7 @@ var arrDevicesValueBefore = [];
 var arrCctvsTimeBefore = [];
 var arrCctvsValueBefore = [];
 
-app.post("/api/data", (req, res) => {
+app.get("/api/data", (req, res) => {
   const { formattedTime, formattedDate } = getGMT8Time();
   const formattedDateTime = `as of ${formattedTime} on ${formattedDate}`;
   const uptime = process.uptime();
