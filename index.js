@@ -7,6 +7,9 @@ const fs = require("fs");
 const { runGeminiPro, runGeminiProVision } = require("./gemini.js");
 const path = require("path");
 const https = require("https");
+const pantry = require("pantry-node");
+const pantryID = process.env.pantryid; // Your unique PantryID
+const pantryClient = new pantry(pantryID);
 
 const { getGMT8Time, format, subtractDates } = require("./home.js");
 const { formattedTime } = getGMT8Time();
@@ -189,6 +192,7 @@ function fixString(invalidJson) {
   return invalidJson.slice(3, -7);
 }
 let pingValue;
+let payload;
 app.post("/api/data/", (req, res) => {
   const { formattedTime, formattedDate } = getGMT8Time();
   const formattedDateTime = `as of ${formattedTime} on ${formattedDate}`;
@@ -241,6 +245,27 @@ app.post("/api/data/", (req, res) => {
   function arrayDiscordSyslog(arrTime, arrName, arrVarBefore, arrTimeBefore) {
     for (let i = 0; i < arrTime.length; i++) {
       if (arrTimeBefore[i] != arrTime[i]) {
+        const options = { parseJSON: true }; // optional
+        if (arrVarBefore[i] === ":green_circle:") {
+          payload = {
+            [arrName[i]]: {
+              on: [subtractDates(arrTimeBefore[i], formattedDateTime)],
+              off: [],
+            },
+          };
+        } else {
+          payload = {
+            [arrName[i]]: {
+              on: [],
+              off: [subtractDates(arrTimeBefore[i], formattedDateTime)],
+            },
+          };
+        }
+
+        pantryClient.basket
+          .update("Basket", payload, options)
+          .then((response) => console.log(response));
+
         if (channel2) {
           channel2.send(
             `${arrName[i].toUpperCase()} ${arrVarBefore[i]} ${subtractDates(arrTimeBefore[i], formattedDateTime)} *${formattedTime}*`
