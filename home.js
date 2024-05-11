@@ -118,86 +118,131 @@ function subtractDates(inputDate, currentDate) {
   }
 }
 
-// const arrayToEmojiConversion = (array) => {
-//   return array.map((value) =>
-//     value === "1" ? ":red_circle:" : ":green_circle:"
-//   );
-// };
+function formatTime(seconds) {
+  const days = Math.floor(seconds / (24 * 60 * 60));
+  seconds %= 24 * 60 * 60;
+  const hours = Math.floor(seconds / (60 * 60));
+  seconds %= 60 * 60;
+  const minutes = Math.floor(seconds / 60);
+  seconds %= 60;
 
-// const cctvs_arr_value = [...Object.values(receivedData2.cctvs.state)];
-// const cctvs_arr_name = [...Object.keys(receivedData2.cctvs.state)];
-// const cctvs_arr_time = [...Object.values(receivedData2.cctvs.time)];
+  let formattedTime = "";
+  if (days > 0) {
+      formattedTime += `${days}d `;
+  }
+  if (hours > 0) {
+      formattedTime += `${hours}h `;
+  }
+  if (minutes > 0) {
+      formattedTime += `${minutes}m `;
+  }
+  formattedTime += `${seconds}s`;
 
-// const devices_arr_value = [...Object.names(receivedData2.devices.state)];
-// const devices_arr_name = [...Object.keys(receivedData2.devices.state)];
-// const devices_arr_time = [...Object.values(receivedData2.cctvs.time)];
+  return formattedTime;
+}
 
-// var arrDevicesTimeBefore =[];
-// var arrDevicesStatusBefore =[];
-// var arrCctvsTimeBefore =[];
-// var arrCctvsStatusBefore =[];
+function calculateTotalDuration(data) {
+  const result = {};
 
-// const arrayToEmoji = (array) => {
-//   return array.map((value) =>
-//     value === "1" ? ":red_circle:" : ":green_circle:"
-//   );
-// };
-// const arrayToEmojiForSyslogs = (array) => {
-//   return array.map((value) =>
-//     value === "1" ? ":green_circle:" : "PC :red_circle:"
-//   );
-// };
+  // Helper function to parse duration strings (e.g., "2d 22h 11m 13s")
+  function parseDuration(duration) {
+      const parts = duration.split(' ');
+      let totalSeconds = 0;
 
-// //CHECK STATUS AND TIME BEFORE
-// function arrayCheckUndefined (arrVarBefore,arrtime){
-// for(let i = 0;i< arr.length;i++){
-//   if (arrVarBefore[i] === undefined) {
-//     arrVarBefore[i] = arrtime[i];
-//   }
-// }
-// }
-// arrayCheckUndefined(arrCctvsTimeBefore,cctvs_arr_time)
-// arrayCheckUndefined(arrDevicesTimeBefore,devices_arr_time)
-// arrayCheckUndefined(arrDevicesStatusBefore,devices_arr_value)
-// arrayCheckUndefined(arrCctvsStatusBefore,cctvs_arr_value)
+      for (const part of parts) {
+          if (part.includes('d')) {
+              totalSeconds += parseInt(part) * 24 * 60 * 60;
+          } else if (part.includes('h')) {
+              totalSeconds += parseInt(part) * 60 * 60;
+          } else if (part.includes('m')) {
+              totalSeconds += parseInt(part) * 60;
+          } else if (part.includes('s')) {
+              totalSeconds += parseInt(part);
+          }
+      }
 
-// for(let i = 0;i< arr.length;i++){
-//   if (arrVarBefore[i] != arrValue[i]) {
-//     if (channel2) {
-//       channel2.send(
-//         `${arrName[i]} ${subtractDates(pcTimeBefore, formattedDateTime)} *${formattedTime}*`
-//       );
-//     }
-//     pcTimeBefore = pcTimeValue;
-//   }
-// }
-// cctvs_arr_name[]
+      return totalSeconds;
+  }
 
-// if (pcStatusValue == 1) {
-//   var pcStatusValueEmoji = ":red_circle:";
-//   pcStatusBefore = "PC :green_circle:";
-// } else {
-//   var pcStatusValueEmoji = ":green_circle:";
-//   pcStatusBefore = "PC :red_circle:";
-// }
+  // Iterate through each device (cctv0, cctv1, etc.)
+  for (const device in data) {
+      const onDurations = data[device].on || []; // Handle cases where 'on' is undefined
+      const offDurations = data[device].off || []; // Handle cases where 'off' is undefined
 
-// if (pcTimeBefore === undefined) {
-//   pcTimeBefore = pcTimeValue;
-//   console.log("NEW PC TIMEVALUE");
-// }
-// if (pcStatusBefore === undefined) {
-//   pcStatusBefore = pcStatusValue;
-// }
+      // Calculate total duration for "on" state
+      const totalOnDuration = onDurations.reduce((acc, duration) => acc + parseDuration(duration), 0);
 
-// if (pcTimeBefore != pcTimeValue) {
-//   //mag sesend notif sa discord is either na dc or onlnie tas papaltan ng new balue si before
-//   console.log(pcTimeBefore);
-//   if (channel2) {
-//     channel2.send(
-//       `${pcStatusBefore} ${subtractDates(pcTimeBefore, formattedDateTime)} *${formattedTime}*`
-//     );
-//   }
-//   pcTimeBefore = pcTimeValue;
-// }
+      // Calculate total duration for "off" state
+      const totalOffDuration = offDurations.reduce((acc, duration) => acc + parseDuration(duration), 0);
 
-module.exports = { getGMT8Time, subtractDates, format };
+      // Convert to days, hours, minutes, and seconds
+      const onDurationFormatted = `${formatTime(totalOnDuration)}`;
+      const offDurationFormatted = `${formatTime(totalOffDuration)}`;
+
+      // Store the results
+      result[device] = {
+          totalOnDuration: onDurationFormatted,
+          totalOffDuration: offDurationFormatted,
+      };
+  }
+
+  return result;
+}
+
+
+/**
+ * Converts a time string in the format "1d 5h 7m 53s" to seconds.
+ * @param {string} timeString - The input time string.
+ * @returns {number} The total time in seconds.
+ */
+function convertTimeStringToSeconds(timeString) {
+  const timeParts = timeString.split(' ');
+
+  let totalSeconds = 0;
+
+  for (const part of timeParts) {
+      const value = parseInt(part);
+      if (part.endsWith('d')) {
+          totalSeconds += value * 24 * 60 * 60; // Convert days to seconds
+      } else if (part.endsWith('h')) {
+          totalSeconds += value * 60 * 60; // Convert hours to seconds
+      } else if (part.endsWith('m')) {
+          totalSeconds += value * 60; // Convert minutes to seconds
+      } else if (part.endsWith('s')) {
+          totalSeconds += value; // Seconds
+      }
+  }
+
+  return totalSeconds;
+}
+
+/**
+ * Converts total seconds to a formatted time string (1d 5h 4m 53s).
+ * @param {number} totalSeconds - The total seconds to convert.
+ * @returns {string} The formatted time string.
+ */function secondsToFormattedTimeString(totalSeconds) {
+  const days = Math.floor(totalSeconds / 86400); // 86400 seconds in a day
+  const remainingSeconds = totalSeconds % 86400;
+
+  const hours = Math.floor(remainingSeconds / 3600); // 3600 seconds in an hour
+  const minutes = Math.floor((remainingSeconds % 3600) / 60);
+  const seconds = remainingSeconds % 60;
+
+  let formattedString = '';
+  if (days > 0) {
+    formattedString += `${days}d `;
+  }
+  if (hours > 0) {
+    formattedString += `${hours}h `;
+  }
+  if (minutes > 0) {
+    formattedString += `${minutes}m `;
+  }
+  if (seconds > 0) {
+    formattedString += `${seconds}s`;
+  }
+
+  return formattedString.trim();
+}
+
+module.exports = { getGMT8Time, subtractDates, format,formatTime,calculateTotalDuration,convertTimeStringToSeconds,secondsToFormattedTimeString };

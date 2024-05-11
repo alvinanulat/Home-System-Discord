@@ -8,10 +8,24 @@ const { runGeminiPro, runGeminiProVision } = require("./gemini.js");
 const path = require("path");
 const https = require("https");
 const pantry = require("pantry-node");
-const pantryID = process.env.pantryid; // Your unique PantryID
-const pantryClient = new pantry(pantryID);
+const pantryID1 = process.env.pantry1id;
+const pantryID2 = process.env.pantry2id; // Your unique PantryID
+const pantryClient1 = new pantry(pantryID1);
+const pantryClient2 = new pantry(pantryID2);
 
-const { getGMT8Time, format, subtractDates } = require("./home.js");
+let basket1json = "./json/basket1.json";
+let basket2json = "./json/basket2.json";
+let basket1read = fs.readFileSync("./json/basket1.json");
+let basket2read = fs.readFileSync("./json/basket2.json");
+
+const {
+  getGMT8Time,
+  format,
+  subtractDates,
+  calculateTotalDuration,
+  convertTimeStringToSeconds,
+  secondsToFormattedTimeString,
+} = require("./home.js");
 const { formattedTime } = getGMT8Time();
 const { editMessage } = require("./discordcustom.js");
 
@@ -62,6 +76,143 @@ client.on("ready", () => {
   }
   // Function to handle message
 });
+
+let cctv_arr_emoji_glo;
+let devices_arr_emoji_glo;
+let cctvs_arr_time_glo;
+let devices_arr_time_glo;
+let devices_arr_name_glo;
+let cctvs_arr_name_glo;
+let totalDurationjson2;
+function myFunction() {
+  const { formattedTime, formattedDate } = getGMT8Time();
+  const formattedDateTime = `as of ${formattedTime} on ${formattedDate}`;
+  const updatedPayload = {};
+  function array12amlogger(arrName, emoji, arrTime) {
+    for (let i = 0; i < arrTime.length; i++) {
+      if (emoji[i] === ":green_circle:") {
+        updatedPayload[arrName[i]] = {
+          on: [subtractDates(arrTime[i], formattedDateTime)],
+          off: [],
+        };
+      } else {
+        updatedPayload[arrName[i]] = {
+          on: [],
+          off: [subtractDates(arrTime[i], formattedDateTime)],
+        };
+      }
+    }
+    const mergedPayload = { ...payloadtemplate, ...updatedPayload };
+    return mergedPayload;
+  }
+  const payloadtemplate = {
+    cctv0: {
+      on: [],
+      off: [],
+    },
+    cctv1: {
+      on: [],
+      off: [],
+    },
+    cctv2: {
+      on: [],
+      off: [],
+    },
+    cctv3: {
+      on: [],
+      off: [],
+    },
+    phone: {
+      on: [],
+      off: [],
+    },
+    pc: {
+      on: [],
+      off: [],
+    },
+  };
+
+  array12amlogger(
+    devices_arr_name_glo,
+    devices_arr_emoji_glo,
+    devices_arr_time_glo
+  );
+  console.log(
+    array12amlogger(cctvs_arr_name_glo, cctv_arr_emoji_glo, cctvs_arr_time_glo)
+  );
+
+  fs.writeFileSync(
+    basket2json,
+    JSON.stringify(
+      array12amlogger(
+        cctvs_arr_name_glo,
+        cctv_arr_emoji_glo,
+        cctvs_arr_time_glo
+      ),
+      null,
+      2
+    )
+  );
+
+  const jsonParsed = JSON.parse(basket1read);
+  let newData = array12amlogger(
+    cctvs_arr_name_glo,
+    cctv_arr_emoji_glo,
+    cctvs_arr_time_glo
+  );
+  const mergedData = {};
+  for (const key in jsonParsed) {
+    mergedData[key] = {
+      on: [...jsonParsed[key].on, ...newData[key].on],
+      off: [...jsonParsed[key].off, ...newData[key].off],
+    };
+  }
+  //fs.writeFileSync(basket1json, JSON.stringify(mergedData), null, 2);
+
+  const jsonParsed2 = calculateTotalDuration(mergedData);
+  const formattedData = Object.entries(jsonParsed2).map(
+    ([device, durations]) => {
+      const onDuration = durations.totalOnDuration;
+      const offDuration = durations.totalOffDuration;
+      return `${device.toUpperCase()} :green_circle: ${onDuration} :red_circle: ${offDuration}`;
+    }
+  );
+  console.log(jsonParsed2);
+  console.log(formattedData);
+  // Join the formatted data with line breaks
+  const result = formattedData.join("\n> ");
+  if (channel2) {
+    const { formattedDate } = getGMT8Time();
+    channel2.send(`**${formattedDate}** \n> ${result}`);
+    fs.writeFileSync(basket1json, JSON.stringify(payloadtemplate, null, 2));
+  }
+}
+
+// Set the desired time (e.g., 12:18 AM)
+const desiredHour = 0; // Midnight
+const desiredMinute = 1;
+
+// Calculate the time until the desired time
+const now = new Date();
+const currentHour = now.getHours();
+const currentMinute = now.getMinutes();
+
+// Check if the desired time has already passed today
+if (
+  currentHour > desiredHour ||
+  (currentHour === desiredHour && currentMinute >= desiredMinute)
+) {
+  // Desired time has already passed today; schedule for tomorrow
+  const millisecondsUntilTomorrow =
+    (24 - currentHour) * 60 * 60 * 1000 + (60 - currentMinute) * 60 * 1000;
+  setTimeout(myFunction, millisecondsUntilTomorrow);
+} else {
+  // Desired time is still ahead today
+  const millisecondsUntilDesiredTime =
+    (desiredHour - currentHour) * 60 * 60 * 1000 +
+    (desiredMinute - currentMinute) * 60 * 1000;
+  setTimeout(myFunction, millisecondsUntilDesiredTime);
+}
 
 authorizedChannels = process.env.authorizedChannels;
 authorizedUsers = process.env.authorizedUsers;
@@ -188,9 +339,7 @@ var arrDevicesTimeBefore = [];
 var arrDevicesValueBefore = [];
 var arrCctvsTimeBefore = [];
 var arrCctvsValueBefore = [];
-function fixString(invalidJson) {
-  return invalidJson.slice(3, -7);
-}
+
 let pingValue;
 let payload;
 app.post("/api/data/", (req, res) => {
@@ -201,14 +350,14 @@ app.post("/api/data/", (req, res) => {
   console.log("------------------------------------");
   //console.log("Received data:", receivedData2);
   res.status(200).send("Data received successfully");
-  console.log(receivedData2);
+  //console.log(receivedData2);
 
   try {
     const pingValuetest = receivedData2.internet.ping;
   } catch (e) {
     const keys = Object.keys(receivedData2);
     receivedData2 = JSON.parse(keys[0]);
-    console.log(receivedData2);
+    //console.log(receivedData2);
     // Code to handle the error (optional)
   }
 
@@ -219,11 +368,12 @@ app.post("/api/data/", (req, res) => {
   const cctvs_arr_value = [...Object.values(receivedData2.cctvs.state)];
   const cctvs_arr_name = [...Object.keys(receivedData2.cctvs.state)];
   const cctvs_arr_time = [...Object.values(receivedData2.cctvs.time)];
+  cctvs_arr_name_glo = cctvs_arr_name;
 
   const devices_arr_value = [...Object.values(receivedData2.devices.state)];
   const devices_arr_name = [...Object.keys(receivedData2.devices.state)];
   const devices_arr_time = [...Object.values(receivedData2.devices.time)];
-
+  devices_arr_name_glo = devices_arr_name;
   const arrayToEmoji = (array) => {
     return array.map((value) =>
       value === "1" ? ":red_circle:" : ":green_circle:"
@@ -241,31 +391,81 @@ app.post("/api/data/", (req, res) => {
       }
     }
   }
-
   function arrayDiscordSyslog(arrTime, arrName, arrVarBefore, arrTimeBefore) {
+    let basket1read = fs.readFileSync("./json/basket1.json");
+    let basket2read = fs.readFileSync("./json/basket2.json");
+    let jsonParsed2 = {};
+    let jsonParsed1 = {};
+    jsonParsed1 = JSON.parse(basket1read);
+    jsonParsed2 = JSON.parse(basket2read);
+    console.log(JSON.parse(basket1read));
+    let cctvName;
+    let propertyToCheck;
+    let hasValue;
+    let hasValue1;
+    let hasValue2;
     for (let i = 0; i < arrTime.length; i++) {
+      cctvName = arrName[i];
       if (arrTimeBefore[i] != arrTime[i]) {
-        const options = { parseJSON: true }; // optional
         if (arrVarBefore[i] === ":green_circle:") {
-          payload = {
-            [arrName[i]]: {
-              on: [subtractDates(arrTimeBefore[i], formattedDateTime)],
-              off: [],
-            },
-          };
+          propertyToCheck = "on";
+          console.log(propertyToCheck);
+          hasValue1 = jsonParsed1[cctvName]["on"].length > 0;
+          hasValue2 = jsonParsed1[cctvName]["off"].length > 0;
+          hasValue = hasValue1 || hasValue2;
+          console.log(hasValue);
+          if (hasValue) {
+            jsonParsed1[arrName[i]]["on"].push(
+              subtractDates(arrTimeBefore[i], formattedDateTime)
+            );
+            console.log(subtractDates(arrTimeBefore[i], formattedDateTime));
+          } else {
+            const convertTimeBasket = subtractDates(
+              arrTimeBefore[i],
+              formattedDateTime
+            );
+
+            const convertTimeBasket2 =
+              jsonParsed2[arrName[i]][propertyToCheck][0];
+            const totalSeconds =
+              convertTimeStringToSeconds(convertTimeBasket) -
+              convertTimeStringToSeconds(convertTimeBasket2);
+            const formattedTime = secondsToFormattedTimeString(totalSeconds);
+            jsonParsed1[arrName[i]]["on"].push(formattedTime);
+            console.log(
+              `${convertTimeBasket}, ${convertTimeBasket2}, ${totalSeconds} ,  ${formattedTime}`
+            );
+          }
         } else {
-          payload = {
-            [arrName[i]]: {
-              on: [],
-              off: [subtractDates(arrTimeBefore[i], formattedDateTime)],
-            },
-          };
+          propertyToCheck = "off";
+          console.log(propertyToCheck);
+          hasValue1 = jsonParsed1[cctvName]["on"].length > 0;
+          hasValue2 = jsonParsed1[cctvName]["off"].length > 0;
+          hasValue = hasValue1 || hasValue2;
+          console.log(hasValue);
+          if (hasValue) {
+            jsonParsed1[arrName[i]]["off"].push(
+              subtractDates(arrTimeBefore[i], formattedDateTime)
+            );
+            console.log(subtractDates(arrTimeBefore[i], formattedDateTime));
+          } else {
+            const convertTimeBasket = subtractDates(
+              arrTimeBefore[i],
+              formattedDateTime
+            );
+            const convertTimeBasket2 =
+              jsonParsed2[arrName[i]][propertyToCheck][0];
+            const totalSeconds =
+              convertTimeStringToSeconds(convertTimeBasket) -
+              convertTimeStringToSeconds(convertTimeBasket2);
+            const formattedTime = secondsToFormattedTimeString(totalSeconds);
+            jsonParsed1[arrName[i]]["off"].push(formattedTime);
+            console.log(
+              `${convertTimeBasket}, ${convertTimeBasket2}, ${totalSeconds} ,  ${formattedTime}`
+            );
+          }
         }
-
-        pantryClient.basket
-          .update("Basket", payload, options)
-          .then((response) => console.log(response));
-
+        fs.writeFileSync(basket1json, JSON.stringify(jsonParsed1), null, 2);
         if (channel2) {
           channel2.send(
             `${arrName[i].toUpperCase()} ${arrVarBefore[i]} ${subtractDates(arrTimeBefore[i], formattedDateTime)} *${formattedTime}*`
@@ -280,13 +480,6 @@ app.post("/api/data/", (req, res) => {
   const devices_arr_emoji = arrayToEmoji(devices_arr_value);
   const cctv_arr_emoji_syslog = arrayToEmojiForSyslogs(cctvs_arr_value);
   const devices_arr_emoji_syslog = arrayToEmojiForSyslogs(devices_arr_value);
-  console.log("cctv emoji ", cctv_arr_emoji_syslog);
-  console.log("DEV emoji ", devices_arr_emoji_syslog);
-
-  console.log("DEV TIME BEFORE ", arrDevicesTimeBefore);
-  console.log("DEV VALUE BEFORE ", arrDevicesValueBefore);
-  console.log("CCTV TIME BEFORE ", arrCctvsTimeBefore);
-  console.log("CCTV VALUE BEFORE ", arrCctvsValueBefore);
 
   arrayCheckUndefined(arrCctvsTimeBefore, cctvs_arr_time);
   arrayCheckUndefined(arrDevicesTimeBefore, devices_arr_time);
@@ -328,6 +521,11 @@ app.post("/api/data/", (req, res) => {
     `4 📹︎    ${cctv_arr_emoji[3]} ${subtractDates(cctvs_arr_time[3], formattedDateTime)}\n\n` +
     `*${formattedDateTime}*\n` +
     `*server uptime: ${format(uptime)}* `;
+
+  cctv_arr_emoji_glo = arrayToEmoji(cctvs_arr_value);
+  devices_arr_emoji_glo = arrayToEmoji(devices_arr_value);
+  cctvs_arr_time_glo = cctvs_arr_time;
+  devices_arr_time_glo = devices_arr_time;
 
   // Condition 1: Ping < 25
   if (pingValue < 25 && !lowPingSent) {
@@ -390,7 +588,7 @@ async function editMessage2(updatedMessage) {
     .get(process.env.viiiinsystemschannel)
     .messages.fetch(messageId);
   await message.edit(updatedMessage);
-  console.log("Message edited Successfully", updatedMessage);
+  //console.log("Message edited Successfully", updatedMessage);
 }
 
 async function checkHomeConnection() {
