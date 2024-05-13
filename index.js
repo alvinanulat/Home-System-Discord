@@ -7,11 +7,7 @@ const fs = require("fs");
 const { runGeminiPro, runGeminiProVision } = require("./gemini.js");
 const path = require("path");
 const https = require("https");
-const pantry = require("pantry-node");
-const pantryID1 = process.env.pantry1id;
-const pantryID2 = process.env.pantry2id; // Your unique PantryID
-const pantryClient1 = new pantry(pantryID1);
-const pantryClient2 = new pantry(pantryID2);
+const CronJob = require("cron").CronJob;
 
 let basket1json = "./json/basket1.json";
 let basket2json = "./json/basket2.json";
@@ -26,7 +22,8 @@ const {
   convertTimeStringToSeconds,
   secondsToFormattedTimeString,
 } = require("./home.js");
-const { formattedTime } = getGMT8Time();
+
+const { formattedTime, hours, seconds } = getGMT8Time();
 const { editMessage } = require("./discordcustom.js");
 
 let apiCallCount = 0; // keep track of how many times we've used the API
@@ -187,32 +184,20 @@ function myFunction() {
     fs.writeFileSync(basket1json, JSON.stringify(payloadtemplate, null, 2));
   }
 }
+let hourglobal;
+let secondsglobal;
+const timejob = new CronJob("* * * * * *", () => {
+  const { hours, seconds } = getGMT8Time();
+  hourglobal = hours;
+  secondsglobal = seconds;
+});
 
-// Set the desired time (e.g., 12:18 AM)
-const desiredHour = 0; // Midnight
-const desiredMinute = 1;
-
-// Calculate the time until the desired time
-const now = new Date();
-const currentHour = now.getHours();
-const currentMinute = now.getMinutes();
-
-// Check if the desired time has already passed today
-if (
-  currentHour > desiredHour ||
-  (currentHour === desiredHour && currentMinute >= desiredMinute)
-) {
-  // Desired time has already passed today; schedule for tomorrow
-  const millisecondsUntilTomorrow =
-    (24 - currentHour) * 60 * 60 * 1000 + (60 - currentMinute) * 60 * 1000;
-  setTimeout(myFunction, millisecondsUntilTomorrow);
-} else {
-  // Desired time is still ahead today
-  const millisecondsUntilDesiredTime =
-    (desiredHour - currentHour) * 60 * 60 * 1000 +
-    (desiredMinute - currentMinute) * 60 * 1000;
-  setTimeout(myFunction, millisecondsUntilDesiredTime);
-}
+timejob.start();
+const job = new CronJob("0 0 0 * * *", () => {
+  //console.log("Running function at midnight!", hourglobal);
+  myFunction();
+});
+job.start();
 
 authorizedChannels = process.env.authorizedChannels;
 authorizedUsers = process.env.authorizedUsers;

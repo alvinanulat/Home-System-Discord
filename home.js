@@ -37,7 +37,7 @@ function getGMT8Time() {
   const formattedTime = `${formattedHours}:${minutes}:${seconds}${ampm}`;
   const formattedDate = `${dayOfWeek}, ${monthOfYear} ${date}, ${year}`;
 
-  return { formattedTime, formattedDate };
+  return { formattedTime, formattedDate, hours, seconds };
 }
 
 function format(seconds) {
@@ -128,13 +128,13 @@ function formatTime(seconds) {
 
   let formattedTime = "";
   if (days > 0) {
-      formattedTime += `${days}d `;
+    formattedTime += `${days}d `;
   }
   if (hours > 0) {
-      formattedTime += `${hours}h `;
+    formattedTime += `${hours}h `;
   }
   if (minutes > 0) {
-      formattedTime += `${minutes}m `;
+    formattedTime += `${minutes}m `;
   }
   formattedTime += `${seconds}s`;
 
@@ -146,49 +146,54 @@ function calculateTotalDuration(data) {
 
   // Helper function to parse duration strings (e.g., "2d 22h 11m 13s")
   function parseDuration(duration) {
-      const parts = duration.split(' ');
-      let totalSeconds = 0;
+    const parts = duration.split(" ");
+    let totalSeconds = 0;
 
-      for (const part of parts) {
-          if (part.includes('d')) {
-              totalSeconds += parseInt(part) * 24 * 60 * 60;
-          } else if (part.includes('h')) {
-              totalSeconds += parseInt(part) * 60 * 60;
-          } else if (part.includes('m')) {
-              totalSeconds += parseInt(part) * 60;
-          } else if (part.includes('s')) {
-              totalSeconds += parseInt(part);
-          }
+    for (const part of parts) {
+      if (part.includes("d")) {
+        totalSeconds += parseInt(part) * 24 * 60 * 60;
+      } else if (part.includes("h")) {
+        totalSeconds += parseInt(part) * 60 * 60;
+      } else if (part.includes("m")) {
+        totalSeconds += parseInt(part) * 60;
+      } else if (part.includes("s")) {
+        totalSeconds += parseInt(part);
       }
+    }
 
-      return totalSeconds;
+    return totalSeconds;
   }
 
   // Iterate through each device (cctv0, cctv1, etc.)
   for (const device in data) {
-      const onDurations = data[device].on || []; // Handle cases where 'on' is undefined
-      const offDurations = data[device].off || []; // Handle cases where 'off' is undefined
+    const onDurations = data[device].on || []; // Handle cases where 'on' is undefined
+    const offDurations = data[device].off || []; // Handle cases where 'off' is undefined
 
-      // Calculate total duration for "on" state
-      const totalOnDuration = onDurations.reduce((acc, duration) => acc + parseDuration(duration), 0);
+    // Calculate total duration for "on" state
+    const totalOnDuration = onDurations.reduce(
+      (acc, duration) => acc + parseDuration(duration),
+      0
+    );
 
-      // Calculate total duration for "off" state
-      const totalOffDuration = offDurations.reduce((acc, duration) => acc + parseDuration(duration), 0);
+    // Calculate total duration for "off" state
+    const totalOffDuration = offDurations.reduce(
+      (acc, duration) => acc + parseDuration(duration),
+      0
+    );
 
-      // Convert to days, hours, minutes, and seconds
-      const onDurationFormatted = `${formatTime(totalOnDuration)}`;
-      const offDurationFormatted = `${formatTime(totalOffDuration)}`;
+    // Convert to days, hours, minutes, and seconds
+    const onDurationFormatted = `${formatTime(totalOnDuration)}`;
+    const offDurationFormatted = `${formatTime(totalOffDuration)}`;
 
-      // Store the results
-      result[device] = {
-          totalOnDuration: onDurationFormatted,
-          totalOffDuration: offDurationFormatted,
-      };
+    // Store the results
+    result[device] = {
+      totalOnDuration: onDurationFormatted,
+      totalOffDuration: offDurationFormatted,
+    };
   }
 
   return result;
 }
-
 
 /**
  * Converts a time string in the format "1d 5h 7m 53s" to seconds.
@@ -196,21 +201,21 @@ function calculateTotalDuration(data) {
  * @returns {number} The total time in seconds.
  */
 function convertTimeStringToSeconds(timeString) {
-  const timeParts = timeString.split(' ');
+  const timeParts = timeString.split(" ");
 
   let totalSeconds = 0;
 
   for (const part of timeParts) {
-      const value = parseInt(part);
-      if (part.endsWith('d')) {
-          totalSeconds += value * 24 * 60 * 60; // Convert days to seconds
-      } else if (part.endsWith('h')) {
-          totalSeconds += value * 60 * 60; // Convert hours to seconds
-      } else if (part.endsWith('m')) {
-          totalSeconds += value * 60; // Convert minutes to seconds
-      } else if (part.endsWith('s')) {
-          totalSeconds += value; // Seconds
-      }
+    const value = parseInt(part);
+    if (part.endsWith("d")) {
+      totalSeconds += value * 24 * 60 * 60; // Convert days to seconds
+    } else if (part.endsWith("h")) {
+      totalSeconds += value * 60 * 60; // Convert hours to seconds
+    } else if (part.endsWith("m")) {
+      totalSeconds += value * 60; // Convert minutes to seconds
+    } else if (part.endsWith("s")) {
+      totalSeconds += value; // Seconds
+    }
   }
 
   return totalSeconds;
@@ -220,7 +225,7 @@ function convertTimeStringToSeconds(timeString) {
  * Converts total seconds to a formatted time string (1d 5h 4m 53s).
  * @param {number} totalSeconds - The total seconds to convert.
  * @returns {string} The formatted time string.
- */function secondsToFormattedTimeString(totalSeconds) {
+ */ function secondsToFormattedTimeString(totalSeconds) {
   const days = Math.floor(totalSeconds / 86400); // 86400 seconds in a day
   const remainingSeconds = totalSeconds % 86400;
 
@@ -228,7 +233,7 @@ function convertTimeStringToSeconds(timeString) {
   const minutes = Math.floor((remainingSeconds % 3600) / 60);
   const seconds = remainingSeconds % 60;
 
-  let formattedString = '';
+  let formattedString = "";
   if (days > 0) {
     formattedString += `${days}d `;
   }
@@ -245,4 +250,12 @@ function convertTimeStringToSeconds(timeString) {
   return formattedString.trim();
 }
 
-module.exports = { getGMT8Time, subtractDates, format,formatTime,calculateTotalDuration,convertTimeStringToSeconds,secondsToFormattedTimeString };
+module.exports = {
+  getGMT8Time,
+  subtractDates,
+  format,
+  formatTime,
+  calculateTotalDuration,
+  convertTimeStringToSeconds,
+  secondsToFormattedTimeString,
+};
