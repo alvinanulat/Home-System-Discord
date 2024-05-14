@@ -193,7 +193,8 @@ const timejob = new CronJob("* * * * * *", () => {
 });
 
 timejob.start();
-const job = new CronJob("0 0 0 * * *", () => {
+//const job = new CronJob(`0 27 * * * *`, () => {
+const job = new CronJob(`0 0 ${hourglobal} * * *`, () => {
   //console.log("Running function at midnight!", hourglobal);
   myFunction();
 });
