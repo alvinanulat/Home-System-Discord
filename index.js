@@ -199,7 +199,7 @@ const timejob = new CronJob("* * * * * *", () => {
     jobhourglobal = hourglobal + 1;
   }
   console.log(jobhourglobal);
-}
+});
 //   if (job) {
 //     job.stop();
 //   }
@@ -211,7 +211,7 @@ const timejob = new CronJob("* * * * * *", () => {
 //   job.start();
 // });
 
-// timejob.start();
+timejob.start();
 
 job = new CronJob(`0 0 0 * * *`, () => {
   myFunction();
