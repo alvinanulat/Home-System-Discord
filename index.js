@@ -184,21 +184,22 @@ function myFunction() {
     fs.writeFileSync(basket1json, JSON.stringify(payloadtemplate, null, 2));
   }
 }
-// let hourglobal = "*";
-// let jobhourglobal = "*";
-// let secondsglobal;
-// let job;
+let hourglobal = "*";
+let jobhourglobal = "*";
+let secondsglobal;
+let job;
 
-// const timejob = new CronJob("* * * * * *", () => {
-//   const { hours, seconds } = getGMT8Time();
-//   hourglobal = hours;
-//   secondsglobal = seconds;
-//   if (hourglobal === 0) {
-//     jobhourglobal = 0;
-//   } else {
-//     jobhourglobal = hourglobal + 1;
-//   }
-
+const timejob = new CronJob("* * * * * *", () => {
+  const { hours, seconds } = getGMT8Time();
+  hourglobal = hours;
+  secondsglobal = seconds;
+  if (hourglobal === 0) {
+    jobhourglobal = 0;
+  } else {
+    jobhourglobal = hourglobal + 1;
+  }
+  console.log(jobhourglobal);
+}
 //   if (job) {
 //     job.stop();
 //   }
