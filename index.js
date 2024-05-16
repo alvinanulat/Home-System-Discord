@@ -184,33 +184,39 @@ function myFunction() {
     fs.writeFileSync(basket1json, JSON.stringify(payloadtemplate, null, 2));
   }
 }
-let hourglobal = "*";
-let jobhourglobal = "*";
-let secondsglobal;
-let job;
+// let hourglobal = "*";
+// let jobhourglobal = "*";
+// let secondsglobal;
+// let job;
 
-const timejob = new CronJob("* * * * * *", () => {
-  const { hours, seconds } = getGMT8Time();
-  hourglobal = hours;
-  secondsglobal = seconds;
-  if (hourglobal === 0) {
-    jobhourglobal = 0;
-  } else {
-    jobhourglobal = hourglobal + 1;
-  }
+// const timejob = new CronJob("* * * * * *", () => {
+//   const { hours, seconds } = getGMT8Time();
+//   hourglobal = hours;
+//   secondsglobal = seconds;
+//   if (hourglobal === 0) {
+//     jobhourglobal = 0;
+//   } else {
+//     jobhourglobal = hourglobal + 1;
+//   }
 
-  if (job) {
-    job.stop();
-  }
+//   if (job) {
+//     job.stop();
+//   }
 
-  job = new CronJob(`30 0 ${jobhourglobal} * * *`, () => {
-    console.log(jobhourglobal);
-  });
-  job.start();
+//   job = new CronJob(`* * ${jobhourglobal} * * *`, () => {
+//     myFunction();
+//     console.log(jobhourglobal);
+//   });
+//   job.start();
+// });
+
+// timejob.start();
+
+job = new CronJob(`0 0 0 * * *`, () => {
+  myFunction();
+  //console.log("",jobhourglobal);
 });
-
-timejob.start();
-
+job.start();
 authorizedChannels = process.env.authorizedChannels;
 authorizedUsers = process.env.authorizedUsers;
 
