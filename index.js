@@ -184,38 +184,38 @@ function myFunction() {
     fs.writeFileSync(basket1json, JSON.stringify(payloadtemplate, null, 2));
   }
 }
-let hourglobal = "*";
-let jobhourglobal = "*";
-let secondsglobal;
-let job;
+// let hourglobal = "*";
+// let jobhourglobal = "*";
+// let secondsglobal;
+// let job;
 
-const timejob = new CronJob("* * * * * *", () => {
-  const { hours, seconds } = getGMT8Time();
-  hourglobal = hours;
-  secondsglobal = seconds;
-  if (hourglobal === 0) {
-    jobhourglobal = 0;
-  } else {
-    jobhourglobal = hourglobal + 1;
-  }
-  console.log(jobhourglobal);
-});
-//   if (job) {
-//     job.stop();
+// const timejob = new CronJob("* * * * * *", () => {
+//   const { hours, seconds } = getGMT8Time();
+//   hourglobal = hours;
+//   secondsglobal = seconds;
+//   if (hourglobal === 0) {
+//     jobhourglobal = 0;
+//   } else {
+//     jobhourglobal = hourglobal + 1;
 //   }
-
-//   job = new CronJob(`* * ${jobhourglobal} * * *`, () => {
-//     myFunction();
-//     console.log(jobhourglobal);
-//   });
-//   job.start();
+//   console.log(jobhourglobal);
 // });
+// //   if (job) {
+// //     job.stop();
+// //   }
 
-timejob.start();
+// //   job = new CronJob(`* * ${jobhourglobal} * * *`, () => {
+// //     myFunction();
+// //     console.log(jobhourglobal);
+// //   });
+// //   job.start();
+// // });
+
+// timejob.start();
 
 job = new CronJob(`0 0 0 * * *`, () => {
   myFunction();
-  //console.log("",jobhourglobal);
+  console.log("12AM");
 });
 job.start();
 authorizedChannels = process.env.authorizedChannels;
