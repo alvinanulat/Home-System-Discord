@@ -213,7 +213,7 @@ function myFunction() {
 
 // timejob.start();
 
-job = new CronJob(`0 0 0 * * *`, () => {
+job = new CronJob(`0 0 16 * * *`, () => {
   myFunction();
   console.log("12AM");
 });
