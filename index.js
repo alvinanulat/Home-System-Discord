@@ -129,10 +129,12 @@ function myFunction() {
     },
   };
 
-  array12amlogger(
-    devices_arr_name_glo,
-    devices_arr_emoji_glo,
-    devices_arr_time_glo
+  console.log(
+    array12amlogger(
+      devices_arr_name_glo,
+      devices_arr_emoji_glo,
+      devices_arr_time_glo
+    )
   );
   console.log(
     array12amlogger(cctvs_arr_name_glo, cctv_arr_emoji_glo, cctvs_arr_time_glo)
@@ -395,14 +397,18 @@ app.post("/api/data/", (req, res) => {
       }
     }
   }
+  let basket1read = fs.readFileSync("./json/basket1.json");
+  let basket2read = fs.readFileSync("./json/basket2.json");
+  console.log(JSON.parse(basket1read));
+  console.log(JSON.parse(basket2read));
   function arrayDiscordSyslog(arrTime, arrName, arrVarBefore, arrTimeBefore) {
-    let basket1read = fs.readFileSync("./json/basket1.json");
+    basket1read = fs.readFileSync("./json/basket1.json");
     let basket2read = fs.readFileSync("./json/basket2.json");
     let jsonParsed2 = {};
     let jsonParsed1 = {};
     jsonParsed1 = JSON.parse(basket1read);
     jsonParsed2 = JSON.parse(basket2read);
-    console.log(JSON.parse(basket1read));
+
     let cctvName;
     let propertyToCheck;
     let hasValue;
