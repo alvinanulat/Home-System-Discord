@@ -129,36 +129,19 @@ function myFunction() {
     },
   };
 
-  console.log(
-    array12amlogger(
-      devices_arr_name_glo,
-      devices_arr_emoji_glo,
-      devices_arr_time_glo
-    )
-  );
-  console.log(
-    array12amlogger(cctvs_arr_name_glo, cctv_arr_emoji_glo, cctvs_arr_time_glo)
+  array12amlogger(
+    devices_arr_name_glo,
+    devices_arr_emoji_glo,
+    devices_arr_time_glo
   );
 
-  fs.writeFileSync(
-    basket2json,
-    JSON.stringify(
-      array12amlogger(
-        cctvs_arr_name_glo,
-        cctv_arr_emoji_glo,
-        cctvs_arr_time_glo
-      ),
-      null,
-      2
-    )
-  );
+  array12amlogger(cctvs_arr_name_glo, cctv_arr_emoji_glo, cctvs_arr_time_glo);
 
+  fs.writeFileSync(basket2json, JSON.stringify(updatedPayload, null, 2));
+  console.log(updatedPayload);
   const jsonParsed = JSON.parse(basket1read);
-  let newData = array12amlogger(
-    cctvs_arr_name_glo,
-    cctv_arr_emoji_glo,
-    cctvs_arr_time_glo
-  );
+  let newData = updatedPayload;
+  console.log(newData);
   const mergedData = {};
   for (const key in jsonParsed) {
     mergedData[key] = {
@@ -166,7 +149,8 @@ function myFunction() {
       off: [...jsonParsed[key].off, ...newData[key].off],
     };
   }
-  //fs.writeFileSync(basket1json, JSON.stringify(mergedData), null, 2);
+  console.log(mergedData);
+  fs.writeFileSync(basket1json, JSON.stringify(mergedData), null, 2);
 
   const jsonParsed2 = calculateTotalDuration(mergedData);
   const formattedData = Object.entries(jsonParsed2).map(
@@ -219,6 +203,7 @@ job = new CronJob(`0 0 16 * * *`, () => {
   myFunction();
   console.log("12AM");
 });
+
 job.start();
 authorizedChannels = process.env.authorizedChannels;
 authorizedUsers = process.env.authorizedUsers;
@@ -397,12 +382,9 @@ app.post("/api/data/", (req, res) => {
       }
     }
   }
-  let basket1read = fs.readFileSync("./json/basket1.json");
-  let basket2read = fs.readFileSync("./json/basket2.json");
-  console.log(JSON.parse(basket1read));
-  console.log(JSON.parse(basket2read));
+
   function arrayDiscordSyslog(arrTime, arrName, arrVarBefore, arrTimeBefore) {
-    basket1read = fs.readFileSync("./json/basket1.json");
+    let basket1read = fs.readFileSync("./json/basket1.json");
     let basket2read = fs.readFileSync("./json/basket2.json");
     let jsonParsed2 = {};
     let jsonParsed1 = {};
@@ -485,6 +467,11 @@ app.post("/api/data/", (req, res) => {
       }
     }
   }
+
+  let basket1read = fs.readFileSync("./json/basket1.json");
+  let basket2read = fs.readFileSync("./json/basket2.json");
+  console.log(JSON.parse(basket1read));
+  console.log(JSON.parse(basket2read));
 
   const cctv_arr_emoji = arrayToEmoji(cctvs_arr_value);
   const devices_arr_emoji = arrayToEmoji(devices_arr_value);
