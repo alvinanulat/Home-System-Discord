@@ -138,10 +138,11 @@ function myFunction() {
   array12amlogger(cctvs_arr_name_glo, cctv_arr_emoji_glo, cctvs_arr_time_glo);
 
   fs.writeFileSync(basket2json, JSON.stringify(updatedPayload, null, 2));
-  console.log(updatedPayload);
+  console.log("12AM FUNCTION START");
+  let basket1read = fs.readFileSync("./json/basket1.json");
   const jsonParsed = JSON.parse(basket1read);
   let newData = updatedPayload;
-  console.log(newData);
+  console.log("newData\n", newData);
   const mergedData = {};
   for (const key in jsonParsed) {
     mergedData[key] = {
@@ -149,7 +150,7 @@ function myFunction() {
       off: [...jsonParsed[key].off, ...newData[key].off],
     };
   }
-  console.log(mergedData);
+  console.log("mergedData\n", mergedData);
   fs.writeFileSync(basket1json, JSON.stringify(mergedData), null, 2);
 
   const jsonParsed2 = calculateTotalDuration(mergedData);
@@ -160,8 +161,8 @@ function myFunction() {
       return `${device.toUpperCase()} :green_circle: ${onDuration} :red_circle: ${offDuration}`;
     }
   );
-  console.log(jsonParsed2);
-  console.log(formattedData);
+  console.log("jsonParsed2\n", jsonParsed2);
+  console.log("formattedData\n", formattedData);
   // Join the formatted data with line breaks
   const result = formattedData.join("\n> ");
   if (channel2) {
@@ -201,7 +202,7 @@ function myFunction() {
 
 job = new CronJob(`0 0 16 * * *`, () => {
   myFunction();
-  console.log("12AM");
+  console.log("12AM FUNCTION END");
 });
 
 job.start();

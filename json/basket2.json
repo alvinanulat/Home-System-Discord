@@ -1,8 +1,8 @@
 {
-  "cctv0": { "on": ["1d 12h 17m 35s"], "off": [] },
-  "cctv1": { "on": ["1d 12h 17m 35s"], "off": [] },
-  "cctv2": { "on": ["3m 35s"], "off": [] },
-  "cctv3": { "on": ["1d 12h 16m 55s"], "off": [] },
-  "phone": { "on": ["5h 33m 25s"], "off": [] },
-  "pc": { "on": ["56m 15s"], "off": [] }
+  "phone": { "on": ["2h 44m 15s"], "off": [] },
+  "pc": { "on": [], "off": ["2h 42m 45s"] },
+  "cctv0": { "on": ["4d 21h 8m 35s"], "off": [] },
+  "cctv1": { "on": ["4d 21h 8m 35s"], "off": [] },
+  "cctv2": { "on": ["12h 36m 35s"], "off": [] },
+  "cctv3": { "on": ["4d 21h 7m 55s"], "off": [] }
 }
