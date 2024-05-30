@@ -342,7 +342,7 @@ app.post("/api/data/", (req, res) => {
   console.log("------------------------------------");
   //console.log("Received data:", receivedData2);
   res.status(200).send("Data received successfully");
-  //console.log(receivedData2);
+  console.log("RAW RECEIVED DATA\n", receivedData2);
 
   try {
     const pingValuetest = receivedData2.internet.ping;
@@ -471,8 +471,8 @@ app.post("/api/data/", (req, res) => {
 
   let basket1read = fs.readFileSync("./json/basket1.json");
   let basket2read = fs.readFileSync("./json/basket2.json");
-  console.log(JSON.parse(basket1read));
-  console.log(JSON.parse(basket2read));
+  console.log("BASKET 1\n", JSON.parse(basket1read));
+  console.log("BASKET 2\n", JSON.parse(basket2read));
 
   const cctv_arr_emoji = arrayToEmoji(cctvs_arr_value);
   const devices_arr_emoji = arrayToEmoji(devices_arr_value);
