@@ -334,6 +334,14 @@ var arrCctvsValueBefore = [];
 
 let pingValue;
 let payload;
+
+app.get("/", (req, res) => {
+  // Send a simple HTML response or any content you want for the root path
+  res.send("<h1>Welcome to My Website!</h1>");
+  // Or set a status code explicitly (optional)
+  // res.status(200).send('...');
+});
+
 app.post("/api/data/", (req, res) => {
   const { formattedTime, formattedDate } = getGMT8Time();
   const formattedDateTime = `as of ${formattedTime} on ${formattedDate}`;
