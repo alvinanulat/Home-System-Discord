@@ -13,7 +13,7 @@ let basket1json = "./json/basket1.json";
 let basket2json = "./json/basket2.json";
 let basket1read = fs.readFileSync("./json/basket1.json");
 let basket2read = fs.readFileSync("./json/basket2.json");
-
+let resultstringglobal;
 const {
   getGMT8Time,
   format,
@@ -337,7 +337,7 @@ let payload;
 
 app.get("/", (req, res) => {
   // Send a simple HTML response or any content you want for the root path
-  res.send("<h1>Welcome to My Website!</h1>");
+  res.send(resultstringglobal);
   // Or set a status code explicitly (optional)
   // res.status(200).send('...');
 });
@@ -527,7 +527,26 @@ app.post("/api/data/", (req, res) => {
     `4 📹︎    ${cctv_arr_emoji[3]} ${subtractDates(cctvs_arr_time[3], formattedDateTime)}\n\n` +
     `*${formattedDateTime}*\n` +
     `*server uptime: ${format(uptime)}* `;
-
+  const inputString =
+    `🌐    ${pingValue}ms</b>  ${pingstate}<br>` +
+    `💻    ${devices_arr_emoji[1]} ${subtractDates(devices_arr_time[1], formattedDateTime)}   <br>` +
+    `📱    ${devices_arr_emoji[0]} ${subtractDates(devices_arr_time[0], formattedDateTime)}<br>` +
+    `🛜      ${hotspotcount} users<br><br>` +
+    `1  📹︎    ${cctv_arr_emoji[0]} ${subtractDates(cctvs_arr_time[0], formattedDateTime)}<br>` +
+    `2 📹︎    ${cctv_arr_emoji[1]} ${subtractDates(cctvs_arr_time[1], formattedDateTime)}<br>` +
+    `3 📹︎    ${cctv_arr_emoji[2]} ${subtractDates(cctvs_arr_time[2], formattedDateTime)}<br>` +
+    `4 📹︎    ${cctv_arr_emoji[3]} ${subtractDates(cctvs_arr_time[3], formattedDateTime)}<br><br>` +
+    `<i>${formattedDateTime}</i><br>` +
+    `<i>server uptime: ${format(uptime)}</i> `;
+  const emojiMap = {
+    ":green_circle:": "🟢",
+    ":red_circle:": "🔴", // Add the red circle emoji mapping
+    // Add more mappings as needed
+  };
+  resultstringglobal = inputString.replace(
+    /(:green_circle:|:red_circle:)/g,
+    (match) => emojiMap[match]
+  );
   cctv_arr_emoji_glo = arrayToEmoji(cctvs_arr_value);
   devices_arr_emoji_glo = arrayToEmoji(devices_arr_value);
   cctvs_arr_time_glo = cctvs_arr_time;
