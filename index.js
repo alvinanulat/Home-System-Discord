@@ -14,6 +14,7 @@ let basket2json = "./json/basket2.json";
 let basket1read = fs.readFileSync("./json/basket1.json");
 let basket2read = fs.readFileSync("./json/basket2.json");
 let resultstringglobal;
+let headerping;
 const {
   getGMT8Time,
   format,
@@ -344,7 +345,7 @@ app.get("/", (req, res) => {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta http-equiv="refresh" content="5">
-      <title>Home Discord System</title>
+      <title>${headerping}</title>
     </head>
     <body>
       <div id="result">${resultstringglobal}</div>
@@ -540,6 +541,7 @@ app.post("/api/data/", (req, res) => {
     `4 📹︎    ${cctv_arr_emoji[3]} ${subtractDates(cctvs_arr_time[3], formattedDateTime)}\n\n` +
     `*${formattedDateTime}*\n` +
     `*server uptime: ${format(uptime)}* `;
+
   const inputString =
     `🌐    ${pingValue}ms</b>  ${pingstate}<br>` +
     `💻    ${devices_arr_emoji[1]} ${subtractDates(devices_arr_time[1], formattedDateTime)}   <br>` +
@@ -557,7 +559,14 @@ app.post("/api/data/", (req, res) => {
     ":yellow_circle:": "🟡", // Add the red circle emoji mapping
     // Add more mappings as needed
   };
+
   resultstringglobal = inputString.replace(
+    /(:green_circle:|:red_circle:|:yellow_circle:)/g,
+    (match) => emojiMap[match]
+  );
+
+  headerping = `${pingstate} ${pingValue}ms | ${hotspotcount} users`;
+  headerping = headerping.replace(
     /(:green_circle:|:red_circle:|:yellow_circle:)/g,
     (match) => emojiMap[match]
   );
