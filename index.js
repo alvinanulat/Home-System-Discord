@@ -540,11 +540,12 @@ app.post("/api/data/", (req, res) => {
     `<i>server uptime: ${format(uptime)}</i> `;
   const emojiMap = {
     ":green_circle:": "🟢",
-    ":red_circle:": "🔴", // Add the red circle emoji mapping
+    ":red_circle:": "🔴",
+    ":yellow_circle:": "🟡", // Add the red circle emoji mapping
     // Add more mappings as needed
   };
   resultstringglobal = inputString.replace(
-    /(:green_circle:|:red_circle:)/g,
+    /(:green_circle:|:red_circle:|:yellow_circle:)/g,
     (match) => emojiMap[match]
   );
   cctv_arr_emoji_glo = arrayToEmoji(cctvs_arr_value);
