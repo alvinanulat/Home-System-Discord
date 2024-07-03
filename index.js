@@ -337,7 +337,20 @@ let payload;
 
 app.get("/", (req, res) => {
   // Send a simple HTML response or any content you want for the root path
-  res.send(resultstringglobal);
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="refresh" content="5">
+      <title>Home Discord System</title>
+    </head>
+    <body>
+      <div id="result">${resultstringglobal}</div>
+    </body>
+    </html>
+  `);
   // Or set a status code explicitly (optional)
   // res.status(200).send('...');
 });
