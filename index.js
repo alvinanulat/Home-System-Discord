@@ -128,6 +128,10 @@ function myFunction() {
       on: [],
       off: [],
     },
+    laptop: {
+      on: [],
+      off: [],
+    },
   };
 
   array12amlogger(
@@ -172,34 +176,6 @@ function myFunction() {
     fs.writeFileSync(basket1json, JSON.stringify(payloadtemplate, null, 2));
   }
 }
-// let hourglobal = "*";
-// let jobhourglobal = "*";
-// let secondsglobal;
-// let job;
-
-// const timejob = new CronJob("* * * * * *", () => {
-//   const { hours, seconds } = getGMT8Time();
-//   hourglobal = hours;
-//   secondsglobal = seconds;
-//   if (hourglobal === 0) {
-//     jobhourglobal = 0;
-//   } else {
-//     jobhourglobal = hourglobal + 1;
-//   }
-//   console.log(jobhourglobal);
-// });
-// //   if (job) {
-// //     job.stop();
-// //   }
-
-// //   job = new CronJob(`* * ${jobhourglobal} * * *`, () => {
-// //     myFunction();
-// //     console.log(jobhourglobal);
-// //   });
-// //   job.start();
-// // });
-
-// timejob.start();
 
 job = new CronJob(`0 0 16 * * *`, () => {
   myFunction();
@@ -210,6 +186,7 @@ job.start();
 authorizedChannels = process.env.authorizedChannels;
 authorizedUsers = process.env.authorizedUsers;
 
+//AI BOT
 client.on("messageCreate", async (message) => {
   try {
     if (message.author.bot) return;
@@ -318,6 +295,7 @@ client.on("messageCreate", async (message) => {
     message.reply("Error pare paulit hehe");
   }
 });
+
 function splitResponse(response) {
   const maxChunkLength = 2000;
   let chunks = [];
@@ -533,6 +511,7 @@ app.post("/api/data/", (req, res) => {
   const resultString2 =
     `:globe_with_meridians:    **${pingValue}ms**  ${pingstate}\n` +
     `:desktop:    ${devices_arr_emoji[1]} ${subtractDates(devices_arr_time[1], formattedDateTime)}   \n` +
+    `:computer:    ${devices_arr_emoji[2]} ${subtractDates(devices_arr_time[2], formattedDateTime)}   \n` +
     `:vibration_mode:    ${devices_arr_emoji[0]} ${subtractDates(devices_arr_time[0], formattedDateTime)}\n` +
     `:wireless:      ${hotspotcount} users\n\n` +
     `1  📹︎    ${cctv_arr_emoji[0]} ${subtractDates(cctvs_arr_time[0], formattedDateTime)}\n` +
@@ -545,6 +524,7 @@ app.post("/api/data/", (req, res) => {
   const inputString =
     `🌐    ${pingValue}ms</b>  ${pingstate}<br>` +
     `💻    ${devices_arr_emoji[1]} ${subtractDates(devices_arr_time[1], formattedDateTime)}   <br>` +
+    `👨‍💻    ${devices_arr_emoji[2]} ${subtractDates(devices_arr_time[2], formattedDateTime)}   <br>` +
     `📱    ${devices_arr_emoji[0]} ${subtractDates(devices_arr_time[0], formattedDateTime)}<br>` +
     `🛜      ${hotspotcount} users<br><br>` +
     `1  📹︎    ${cctv_arr_emoji[0]} ${subtractDates(cctvs_arr_time[0], formattedDateTime)}<br>` +
