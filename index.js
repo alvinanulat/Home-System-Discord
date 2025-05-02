@@ -1,6 +1,8 @@
 const express = require("express");
 const app = express();
 app.use(express.json());
+const cors = require("cors");
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 require("dotenv").config();
 const fs = require("fs");
@@ -47,6 +49,8 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildPresences,
   ],
 });
 
@@ -54,15 +58,56 @@ const PORT = process.env.PORT || 3949;
 
 client.login(process.env.BOT_TOKEN);
 
+let userData = [];
+
+function refreshUserData() {
+  client.guilds
+    .fetch(process.env.GUILD_ID)
+    .then((guild) => {
+      return guild.members.fetch().then(() => {
+        const members = guild.members.cache
+          .filter((m) => !m.user.bot)
+          .map((m) => {
+            const pres = m.presence;
+            if (!pres || pres.status === "offline") return null;
+            const [act] = pres.activities;
+            return {
+              name: m.displayName,
+              status: pres.status,
+              avatar: m.user.displayAvatarURL({ extension: "png", size: 64 }),
+              activity: act ? `${act.type} ${act.name}` : "No activity",
+            };
+          })
+          .filter(Boolean);
+
+        userData = members;
+      });
+    })
+    .catch((err) => {
+      console.error("Failed to refresh user data:", err);
+    });
+}
+
 client.once("ready", (c) => {
   console.log(`${c.user.tag} Ready!`);
   channel = client.channels.cache.get(process.env.viiiinsystemschannel);
   console.log(channel);
-  app.listen(PORT, () => {
-    console.log(`Server listening on port ${PORT}`);
-  });
+  // app.listen(PORT, () => {
+  //   console.log(`Server listening on port ${PORT}`);
+  // });
   dataReceivedTime = Date.now(); // Renamed for clarity
   console.log(dataReceivedTime);
+
+  app.listen(PORT, () => {
+    console.log(`API running on http://localhost:${PORT}`);
+  });
+});
+setInterval(refreshUserData, 5_000);
+
+// API endpoint
+app.get("/api/users", (req, res) => {
+  res.json(userData);
+  console.log(userData);
 });
 
 client.on("ready", () => {
