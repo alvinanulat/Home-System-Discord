@@ -108,7 +108,6 @@ setInterval(refreshUserData, 5_000);
 // API endpoint
 app.get("/api/users", (req, res) => {
   res.json(userData);
-  console.log(userData);
 });
 
 client.on("ready", () => {
