@@ -73,6 +73,7 @@ function refreshUserData() {
             const [act] = pres.activities;
             return {
               name: m.displayName,
+              tag: m.user.tag,
               status: pres.status,
               avatar: m.user.displayAvatarURL({ extension: "png", size: 64 }),
               activity: act ? `${act.type} ${act.name}` : "No activity",
