@@ -61,32 +61,86 @@ client.login(process.env.BOT_TOKEN);
 let userData = [];
 
 function refreshUserData() {
-  client.guilds
-    .fetch(process.env.GUILD_ID)
-    .then((guild) => {
-      return guild.members.fetch().then(() => {
-        const members = guild.members.cache
-          .filter((m) => !m.user.bot)
+  const mergedConfigs = [
+    { guildId: process.env.GUILD_ID_1, roleId: process.env.ROLE_ID_1 },
+    { guildId: process.env.GUILD_ID_2, roleId: process.env.ROLE_ID_2 },
+  ];
+
+  const specialConfig = {
+    guildId: process.env.GUILD_ID_2,
+    roleId: process.env.ROLE_ID_2_CUSTOM,
+  };
+
+  const mergedUsers = [];
+  let specialUsers = [];
+
+  const mergedPromises = mergedConfigs.map(({ guildId, roleId }) =>
+    client.guilds
+      .fetch(guildId)
+      .then((guild) =>
+        guild.members.fetch().then(() => {
+          const members = guild.members.cache
+            .filter(
+              (m) =>
+                !m.user.bot &&
+                m.roles.cache.has(roleId) &&
+                m.presence &&
+                m.presence.status !== "offline"
+            )
+            .map((m) => {
+              const [act] = m.presence.activities;
+              return {
+                name: m.displayName,
+                tag: m.user.tag,
+                status: m.presence.status,
+                avatar: m.user.displayAvatarURL({ extension: "png", size: 64 }),
+                activity: act ? `${act.type} ${act.name}` : "No activity",
+              };
+            });
+
+          mergedUsers.push(...members);
+        })
+      )
+      .catch((err) => {
+        console.error(`Failed to fetch from guild ${guildId}:`, err);
+      })
+  );
+
+  const specialPromise = client.guilds
+    .fetch(specialConfig.guildId)
+    .then((guild) =>
+      guild.members.fetch().then(() => {
+        specialUsers = guild.members.cache
+          .filter(
+            (m) =>
+              !m.user.bot &&
+              m.roles.cache.has(specialConfig.roleId) &&
+              m.presence &&
+              m.presence.status !== "offline"
+          )
           .map((m) => {
-            const pres = m.presence;
-            if (!pres || pres.status === "offline") return null;
-            const [act] = pres.activities;
+            const [act] = m.presence.activities;
             return {
               name: m.displayName,
               tag: m.user.tag,
-              status: pres.status,
+              status: m.presence.status,
               avatar: m.user.displayAvatarURL({ extension: "png", size: 64 }),
               activity: act ? `${act.type} ${act.name}` : "No activity",
             };
-          })
-          .filter(Boolean);
-
-        userData = members;
-      });
-    })
+          });
+      })
+    )
     .catch((err) => {
-      console.error("Failed to refresh user data:", err);
+      console.error(`Failed to fetch from special guild:`, err);
     });
+
+  Promise.all([...mergedPromises, specialPromise]).then(() => {
+    userData = {
+      merged: mergedUsers,
+      special: specialUsers,
+    };
+    //console.log(userData);
+  });
 }
 
 client.once("ready", (c) => {
